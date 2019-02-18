@@ -67,13 +67,4 @@ async def on_message(message):
                 await message.channel.send(embed=embedded_message)
 
 
-@bot.command()
-async def greet(ctx):
-    await ctx.send(":smiley: :wave: Hello, there!")
-
-
-def item_name(item):
-    return item["name"]
-
-
 bot.run("NTQ3MDg3NTIxOTY4OTQ3MjEx.D0x8LA.FzOkJ9jjlK91PRS6LlNDj0JcPMM")
