@@ -32,12 +32,26 @@ async def on_message(message):
             }
 
             response = requests.get(url=url, params=params)
-            # import pdb; pdb.set_trace()
+
             json_response = response.json()
 
             for item in json_response:
                 item_name = item["name"]
-                await message.channel.send(item_name)
+                item_image_url = item["image"]
+                item_global_price = item["global"]["latest"]
+                item_sea_price = item["sea"]["latest"]
+
+                if item_image_url is None:
+                    item_image_url = ""
+
+                if item_global_price is None:
+                    item_global_price = "Unknown"
+
+                if item_sea_price is None:
+                    item_sea_price = "Unknown"
+
+                rom_message = "{0}, {1}, Global: {2} z, SEA: {3} z".format(item_name, item_image_url, item_global_price, item_sea_price)
+                await message.channel.send(rom_message)
 
 @bot.command()
 async def greet(ctx):
