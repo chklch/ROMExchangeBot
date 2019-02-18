@@ -35,9 +35,8 @@ async def on_message(message):
             json_response = response.json()
 
             if len(json_response) == 0:
-                await message.channel.send("Could not find {0}".format(query))
+                await message.channel.send("Could not find '{0}'".format(query))
                 return
-
 
             if len(json_response) > 6:
                 item_list = list(map(lambda item: item["name"], json_response))
