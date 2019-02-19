@@ -57,9 +57,11 @@ async def on_message(message):
                 item_name = item["name"]
                 item_image_url = item["image"]
                 item_global_price = '{:,.0f}'.format(item["global"]["latest"])
+                item_global_week_change = _get_formatted_week_change(item["global"]["week"]["change"])
                 item_sea_price = '{:,.0f}'.format(item["sea"]["latest"])
+                item_sea_week_change = _get_formatted_week_change(item["sea"]["week"]["change"])
 
-                field_message = "Global: {0}z\nSEA: {1}z".format(item_global_price, item_sea_price)
+                field_message = "Global: {0}z ({1} in 1 week)\nSEA: {2}z ({3} in 1 week)".format(item_global_price, item_global_week_change, item_sea_price, item_sea_week_change)
 
                 embedded_message = discord.Embed(color=0x1ef1bd)
                 embedded_message.title = item_name
@@ -72,6 +74,15 @@ async def on_message(message):
                     embedded_message.set_image(url=item_image_url)
 
                 await message.channel.send(embed=embedded_message)
+
+
+def _get_formatted_week_change(value):
+    formatted_string = "{:.2%}".format(value/100)
+
+    if value > 0:
+        formatted_string = "+" + formatted_string
+
+    return formatted_string
 
 
 bot.run(bot_token)
