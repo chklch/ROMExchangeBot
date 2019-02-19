@@ -65,10 +65,8 @@ async def on_message(message):
                 embedded_message.title = item_name
                 embedded_message.description = field_message
 
-                import pdb; pdb.set_trace()
                 encoded_item_name = quote(item_name)
                 embedded_message.url = rom_exchange_endpoint + "?q=" + encoded_item_name + "&exact=true"
-                print(embedded_message.url)
 
                 if item_image_url is not None:
                     embedded_message.set_image(url=item_image_url)
