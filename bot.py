@@ -1,9 +1,14 @@
+from urllib.parse import quote
+
 import discord
 from discord.ext import commands
 import requests
-# import json
+import sys
 
 bot = commands.Bot(command_prefix='$')
+rom_exchange_endpoint = "https://www.romexchange.com/"
+rom_exchange_api = rom_exchange_endpoint + "api"
+bot_token = sys.argv[1]
 
 @bot.event
 async def on_ready():
@@ -24,19 +29,19 @@ async def on_message(message):
         msg = message.content.split(bot.user.mention + " ")
         if len(msg) == 2:
             query = msg[1]
-            url = "https://www.romexchange.com/api"
 
             params = {
                 "exact": "false",
                 "item": query,
             }
 
-            response = requests.get(url=url, params=params)
+            response = requests.get(url=rom_exchange_api, params=params)
             json_response = response.json()
 
             if len(json_response) == 0:
                 await message.channel.send("Could not find '{0}'".format(query))
                 return
+
 
             if len(json_response) > 6:
                 item_list = list(map(lambda item: item["name"], json_response))
@@ -60,10 +65,15 @@ async def on_message(message):
                 embedded_message.title = item_name
                 embedded_message.description = field_message
 
+                import pdb; pdb.set_trace()
+                encoded_item_name = quote(item_name)
+                embedded_message.url = rom_exchange_endpoint + "?q=" + encoded_item_name + "&exact=true"
+                print(embedded_message.url)
+
                 if item_image_url is not None:
                     embedded_message.set_image(url=item_image_url)
 
                 await message.channel.send(embed=embedded_message)
 
 
-bot.run("NTQ3MDg3NTIxOTY4OTQ3MjEx.D0x8LA.FzOkJ9jjlK91PRS6LlNDj0JcPMM")
+bot.run(bot_token)
