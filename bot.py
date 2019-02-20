@@ -52,12 +52,16 @@ async def on_message(message):
                 for help_message in helper_messages:
                     await message.channel.send(help_message)
 
+
 def _get_response_messages(query, json_response):
     if len(json_response) == 0:
         print("LOGS::NOT_FOUND:" + query)
         return None, ["Could not find '{0}'".format(query)]
 
     _print_query_info(query, json_response)
+
+    if _item_exact_match(query, json_response):
+        return _get_exact_response_message(query, json_response)
 
     if len(json_response) > 6:
         item_list = list(map(lambda item: item["name"], json_response))
@@ -72,30 +76,63 @@ def _get_response_messages(query, json_response):
 
     item_messages = list()
     for item in json_response:
-        item_name = item["name"]
-        item_image_url = item["image"]
-        item_global_price = '{:,.0f}'.format(item["global"]["latest"])
-        item_global_week_change = _get_formatted_week_change(item["global"]["week"]["change"])
-        item_sea_price = '{:,.0f}'.format(item["sea"]["latest"])
-        item_sea_week_change = _get_formatted_week_change(item["sea"]["week"]["change"])
-
-        field_message = "Global: {0}z ({1} in 1 week)\nSEA: {2}z ({3} in 1 week)".format(item_global_price,
-                                                                                         item_global_week_change,
-                                                                                         item_sea_price,
-                                                                                         item_sea_week_change)
-
-        embedded_message = discord.Embed(color=0x1ef1bd)
-        embedded_message.title = item_name
-        embedded_message.description = field_message
-
-        encoded_item_name = quote(item_name)
-        embedded_message.url = rom_exchange_endpoint + "?q=" + encoded_item_name + "&exact=true"
-
-        if item_image_url is not None:
-            embedded_message.set_image(url=item_image_url)
+        embedded_message = _get_item_embed_message(item)
 
         item_messages.append(embedded_message)
     return item_messages, None
+
+
+def _item_exact_match(query, json_response):
+    item_name_list = list(map(lambda item: item["name"], json_response))
+    exact_item = list(filter(lambda name: name.lower() == query.lower(), item_name_list))
+    return len(exact_item) == 1
+
+
+def _get_exact_response_message(query, json_response):
+    json_item_list = list(filter(lambda item: item["name"].lower() == query.lower(), json_response))
+
+    if len(json_item_list) == 1:
+        json_item = json_item_list[0]
+
+    if len(json_item_list) > 1:
+        item_list = list(map(lambda item: item["name"], json_response))
+        print("ERROR::EXACT_TOO_MANY: Multiple matches Query: {0} Response:{1}".format(query, ', '.join(item_list)))
+        return
+
+    if len(json_response) > 1:
+        item_list = list(map(lambda item: item["name"], json_response))
+        item_list_filter_exact = list(filter(lambda item: item.lower() != query.lower(), item_list))
+        item_list_filtered_with_mention = list(
+            map(lambda item: "{0} {1}".format(bot.user.mention, item), item_list_filter_exact))
+
+        item_string = '\n'.join(item_list_filtered_with_mention)
+
+        print("LOGS::EXACT_TOO_MANY: Query: {0} Response:{1}".format(query, ', '.join(item_list)))
+        too_many_message = "Other results found.  Were you looking for these?\n\n{0}".format(item_string)
+
+    item_message = _get_item_embed_message(json_item)
+    return [item_message], [too_many_message]
+
+
+def _get_item_embed_message(json_item):
+    item_name = json_item["name"]
+    item_image_url = json_item["image"]
+    item_global_price = '{:,.0f}'.format(json_item["global"]["latest"])
+    item_global_week_change = _get_formatted_week_change(json_item["global"]["week"]["change"])
+    item_sea_price = '{:,.0f}'.format(json_item["sea"]["latest"])
+    item_sea_week_change = _get_formatted_week_change(json_item["sea"]["week"]["change"])
+    field_message = "Global: {0}z ({1} in 1 week)\nSEA: {2}z ({3} in 1 week)".format(item_global_price,
+                                                                                     item_global_week_change,
+                                                                                     item_sea_price,
+                                                                                     item_sea_week_change)
+    embedded_message = discord.Embed(color=0x1ef1bd)
+    embedded_message.title = item_name
+    embedded_message.description = field_message
+    encoded_item_name = quote(item_name)
+    embedded_message.url = rom_exchange_endpoint + "?q=" + encoded_item_name + "&exact=true"
+    if item_image_url is not None:
+        embedded_message.set_image(url=item_image_url)
+    return embedded_message
 
 
 def _get_formatted_week_change(value):
