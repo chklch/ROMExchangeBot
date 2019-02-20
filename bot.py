@@ -16,7 +16,6 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-    sys.stdout.flush()
 
 @bot.event
 async def on_message(message):
@@ -34,6 +33,7 @@ async def on_message(message):
                 "item": query,
             }
 
+            print("Searching for:" + query)
             response = requests.get(url=rom_exchange_api, params=params)
             json_response = response.json()
             _send_response(query, message, json_response)
@@ -41,8 +41,11 @@ async def on_message(message):
 
 def _send_response(query, message, json_response):
     if len(json_response) == 0:
+        print("LOGS::NOT_FOUND:" + query)
         await message.channel.send("Could not find '{0}'".format(query))
         return
+
+    _print_query_info(query, json_response)
 
     if len(json_response) > 6:
         item_list = list(map(lambda item: item["name"], json_response))
@@ -52,6 +55,7 @@ def _send_response(query, message, json_response):
 
         item_string = '\n'.join(item_list_filtered_with_mention)
 
+        print("LOGS::TOO_MANY:" + query)
         await message.channel.send("Too many results returned.  Try the following?\n\n{0}".format(item_string))
         return
 
@@ -89,5 +93,9 @@ def _get_formatted_week_change(value):
 
     return formatted_string
 
+
+def _print_query_info(query, json_response):
+    debug_list = list(map(lambda item: item["name"], json_response))
+    print("LOGS::INFO: Query: {0}, Response:{1}".format(query, ', '.join(debug_list)))
 
 bot.run(bot_token)
