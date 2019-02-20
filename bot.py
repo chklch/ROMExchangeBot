@@ -28,7 +28,7 @@ async def on_message(message):
     if message.content.startswith(bot.user.mention):
         msg = message.content.split(bot.user.mention + " ")
         if len(msg) == 2:
-            query = msg[1]
+            query = msg[1].strip()
 
             params = {
                 "exact": "false",
