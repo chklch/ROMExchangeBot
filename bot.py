@@ -89,30 +89,50 @@ def _item_exact_match(query, json_response):
 
 
 def _get_exact_response_message(query, json_response):
-    json_item_list = list(filter(lambda item: item["name"].lower() == query.lower(), json_response))
+    json_exact_item_list = list(filter(lambda item: item["name"].lower() == query.lower(), json_response))
 
-    if len(json_item_list) == 1:
-        json_item = json_item_list[0]
+    json_item = None
+    if len(json_exact_item_list) == 1:
+        json_item = json_exact_item_list[0]
 
-    if len(json_item_list) > 1:
+    if len(json_exact_item_list) > 1:
         item_list = list(map(lambda item: item["name"], json_response))
         print("ERROR::EXACT_TOO_MANY: Multiple matches Query: {0} Response:{1}".format(query, ', '.join(item_list)))
         return
 
-    if len(json_response) > 1:
-        item_list = list(map(lambda item: item["name"], json_response))
-        item_list_filter_exact = list(filter(lambda item: item.lower() != query.lower(), item_list))
+    json_item_list = [json_item] + list(filter(lambda item: item["name"].lower().startswith(query.lower() + " ["), json_response))
+    item_messages = list()
+    for item in json_item_list:
+        item_messages.append(_get_item_embed_message(item))
+
+    filtered_json_response = _get_filtered_response(json_item_list, json_response)
+
+    too_many_message = None
+
+    if len(filtered_json_response) > 0:
+        item_list = list(map(lambda item: item["name"], filtered_json_response))
+        item_list_filter = list(filter(lambda item: item.find("[") == -1, item_list))
         item_list_filtered_with_mention = list(
-            map(lambda item: "{0} {1}".format(bot.user.mention, item), item_list_filter_exact))
+            map(lambda item: "{0} {1}".format(bot.user.mention, item), item_list_filter))
 
         item_string = '\n'.join(item_list_filtered_with_mention)
 
         print("LOGS::EXACT_TOO_MANY: Query: {0} Response:{1}".format(query, ', '.join(item_list)))
         too_many_message = "Other results found.  Were you looking for these?\n\n{0}".format(item_string)
 
-    item_message = _get_item_embed_message(json_item)
-    return [item_message], [too_many_message]
+    if too_many_message is None:
+        return item_messages, None
+    return item_messages, [too_many_message]
 
+
+def _get_filtered_response(json_item_list, json_response):
+    remove_names = list(map(lambda item: item["name"], json_item_list))
+    filtered_response = list()
+    for item in json_response:
+        if item["name"] not in remove_names:
+            filtered_response.append(item)
+
+    return filtered_response
 
 def _get_item_embed_message(json_item):
     item_name = json_item["name"]
