@@ -33,6 +33,7 @@ async def on_message(message):
             params = {
                 "exact": "false",
                 "item": query,
+                "slim": "true",
             }
 
             print("Searching for:" + query)
