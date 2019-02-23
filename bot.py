@@ -142,7 +142,7 @@ def _get_item_embed_message(json_item):
     item_global_week_change = _get_formatted_week_change(json_item["global"]["week"]["change"])
     item_sea_price = '{:,.0f}'.format(json_item["sea"]["latest"])
     item_sea_week_change = _get_formatted_week_change(json_item["sea"]["week"]["change"])
-    field_message = "Global: {0}z ({1} in 1 week)\nSEA: {2}z ({3} in 1 week)".format(item_global_price,
+    field_message = "Global: {0}z ({1} in 1 week)\nSEA: {2}z ({3} this week)".format(item_global_price,
                                                                                      item_global_week_change,
                                                                                      item_sea_price,
                                                                                      item_sea_week_change)
