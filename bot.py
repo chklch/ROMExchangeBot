@@ -6,7 +6,7 @@ import requests
 import sys
 
 bot = commands.Bot(command_prefix='$')
-rom_exchange_endpoint = "https://www.romexchange.com/"
+rom_exchange_endpoint = "https://us-central1-rom-exchange.cloudfunctions.net/"
 rom_exchange_api = rom_exchange_endpoint + "api"
 bot_token = sys.argv[1]
 
