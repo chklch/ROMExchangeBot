@@ -6,8 +6,8 @@ import requests
 import sys
 
 bot = commands.Bot(command_prefix='$')
-rom_exchange_endpoint = "https://us-central1-rom-exchange.cloudfunctions.net/"
-rom_exchange_api = rom_exchange_endpoint + "api"
+rom_exchange_api = "https://us-central1-rom-exchange.cloudfunctions.net/api"
+rom_exchange_web = "https://www.romexchange.com/"
 bot_token = sys.argv[1]
 
 
@@ -150,7 +150,7 @@ def _get_item_embed_message(json_item):
     embedded_message.title = item_name
     embedded_message.description = field_message
     encoded_item_name = quote(item_name)
-    embedded_message.url = rom_exchange_endpoint + "?q=" + encoded_item_name + "&exact=true"
+    embedded_message.url = rom_exchange_web + "?q=" + encoded_item_name + "&exact=true"
     if item_image_url is not None:
         embedded_message.set_image(url=item_image_url)
     return embedded_message
